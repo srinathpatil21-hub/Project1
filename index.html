@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Disease Identifier</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input[type="file"] { margin: 20px 0; }
+        button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #45a049; }
+        #result { margin-top: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #e8f5e9; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Plant Disease Identifier</h1>
+        <p>Upload a picture of a plant leaf to check for diseases.</p>
+
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="uploadImage()">Identify Disease</button>
+        
+        <div id="result">
+            Prediction will appear here...
+        </div>
+    </div>
+
+    <script>
+        // NOTE: Replace this with the actual URL after deployment (e.g., https://your-app-name.onrender.com)
+        const API_ENDPOINT = 'http://127.0.0.1:5000/predict'; // Use your local URL for testing
+
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const resultDiv = document.getElementById('result');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                resultDiv.innerHTML = "Please select an image file first.";
+                return;
+            }
+            
+            resultDiv.innerHTML = "Processing image, please wait...";
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultDiv.innerHTML = `**ERROR:** ${data.error}`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>✅ Prediction Complete</h2>
+                        <p><strong>Disease:</strong> ${data.prediction}</p>
+                        <p><strong>Confidence:</strong> ${data.confidence}</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = `An error occurred: ${error.message}. Ensure the backend server is running and the API_ENDPOINT is correct.`;
+            }
+        }
+    </script>
+</body>
+</html>
